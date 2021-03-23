@@ -1,0 +1,36 @@
+import requests
+import pandas as pd
+from bs4 import BeautifulSoup
+import datetime
+r = requests.get('https://www.telekom.com/de/medien/medieninformationen')
+s = requests.get('https://www.telekom.de/start')
+soup_com= BeautifulSoup(r.text, 'html.parser')
+soup_de = BeautifulSoup(s.text, 'html.parser')
+
+#Scrapper https://www.telekom.com/de/medien/medieninformationen
+results_com = soup_com.find_all("div", attrs={'class':'text'})
+results_com = results_com[4:-4]
+records_com = []
+for result in results_com:
+    datum = result.find('time').text[1:-1]
+    headline = result.find("div", attrs={'class':'richtext'}).text[2:-3]
+    url = 'https://www.telekom.com'+result.find('a')['href']
+    records.append((datum, headline, url))
+df_com = pd.DataFrame(records, columns=['Datum', 'Headline', 'Url'])
+print(df_com)
+
+#Scrapper https://www.telekom.de --> ist fehlerhaft
+results_de = soup_de.find_all("div", attrs={'class':'teaser__content-wrapper'})
+first_result_de = results_de[0]
+first_result_de
+records_de = []
+for result_de in results_de:
+    datum_de = datetime.date.today() 
+    ###das folgende ist sehr Fehleranfällig. Muss noch mit den Teasermodulen gematcht werden
+    headline_de = result_de.find('h2').text[6:-6]
+    body_de = result_de.find('p').text[7:-6]
+    headline_body_de = headline_de+'. '+body_de
+    url_de = 'https://www.telekom.de'+result_de.find('a')['href']
+    records_de.append((datum_de, headline_body_de, url_de))
+df_de = pd.DataFrame(records_de, columns=['Datum', 'Headline', 'Url'])
+print(df_de)
